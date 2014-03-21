@@ -229,6 +229,7 @@ $(INSTALLED_BUILD_PROP_TARGET): $(BUILDINFO_SH) $(INTERNAL_BUILD_ID_MAKEFILE) $(
 			TARGET_CPU_ABI2="$(TARGET_CPU_ABI2)" \
 			TARGET_AAPT_CHARACTERISTICS="$(TARGET_AAPT_CHARACTERISTICS)" \
 			TARGET_UNIFIED_DEVICE="$(TARGET_UNIFIED_DEVICE)" \
+			TARGET_SETS_FSTAB="$(TARGET_SETS_FSTAB)" \
 			$(PRODUCT_BUILD_PROP_OVERRIDES) \
 	        bash $(BUILDINFO_SH) > $@
 	$(hide) $(foreach file,$(system_prop_file), \
@@ -1427,6 +1428,12 @@ else
     $(INTERNAL_OTA_PACKAGE_TARGET): extras_file := build/tools/releasetools/extras.txt
 endif
 
+ifneq ($(TARGET_SETS_FSTAB),)
+    $(INTERNAL_OTA_PACKAGE_TARGET): mount_by_label := true
+else
+    $(INTERNAL_OTA_PACKAGE_TARGET): mount_by_label := false
+endif
+
 $(INTERNAL_OTA_PACKAGE_TARGET): $(BUILT_TARGET_FILES_PACKAGE) $(DISTTOOLS)
 	@echo -e ${PRT_HST}"Package OTA: $@"${CL_RST}
 	MKBOOTIMG=$(BOARD_CUSTOM_BOOTIMG_MK) \
@@ -1437,6 +1444,7 @@ $(INTERNAL_OTA_PACKAGE_TARGET): $(BUILT_TARGET_FILES_PACKAGE) $(DISTTOOLS)
 	   --override_device=$(override_device) \
 	   --override_prop=$(override_prop) \
 	   --extras_file=$(extras_file) \
+	   --mount_by_label=$(mount_by_label) \
 	   $(BUILT_TARGET_FILES_PACKAGE) $@
 
 CUSTOM_TARGET_PACKAGE := $(PRODUCT_OUT)/omni-$(ROM_VERSION).zip
